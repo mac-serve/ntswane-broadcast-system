@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Ntswane | Official Community Portal</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --gold: #d4af37;
+            --gold-dark: #a67c00;
+            --gold-soft: #f1d67a;
+            --black: #0f0f10;
+            --charcoal: #1a1a1d;
+            --light: #f8f9fa;
+            --text-muted: #6c757d;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            background: #f7f7f8;
+            color: #222;
+        }
+
+        .navbar-custom {
+            background: rgba(15, 15, 16, 0.96);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(212, 175, 55, 0.18);
+        }
+
+        .navbar-brand,
+        .nav-link {
+            color: #fff !important;
+        }
+
+        .nav-link:hover {
+            color: var(--gold) !important;
+        }
+
+        .hero-section {
+            min-height: 100vh;
+            background:
+                linear-gradient(rgba(10, 10, 10, 0.76), rgba(10, 10, 10, 0.82)),
+                url('/static/hero-bg.jpg') center/cover no-repeat;
+            display: flex;
+            align-items: center;
+            color: #fff;
+            position: relative;
+        }
+
+        .hero-section::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at top right, rgba(212, 175, 55, 0.18), transparent 28%);
+            pointer-events: none;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .hero-logo {
+            max-width: 110px;
+            margin-bottom: 1.2rem;
+        }
+
+        .hero-title {
+            font-size: 3rem;
+            font-weight: 800;
+            line-height: 1.2;
+        }
+
+        .hero-title span {
+            color: var(--gold);
+        }
+
+        .hero-text {
+            color: #ddd;
+            font-size: 1.1rem;
+            max-width: 720px;
+        }
+
+        .btn-gold {
+            background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+            border: none;
+            color: #111;
+            font-weight: 700;
+            padding: 0.9rem 1.4rem;
+            border-radius: 10px;
+        }
+
+        .btn-gold:hover {
+            color: #111;
+            opacity: 0.95;
+        }
+
+        .btn-outline-light {
+            border-radius: 10px;
+            padding: 0.9rem 1.4rem;
+        }
+
+        .section {
+            padding: 90px 0;
+        }
+
+        .section-title {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--charcoal);
+            margin-bottom: 0.4rem;
+        }
+
+        .section-line {
+            width: 70px;
+            height: 4px;
+            background: var(--gold);
+            border-radius: 999px;
+            margin-bottom: 1.5rem;
+        }
+
+        .info-card,
+        .notice-card,
+        .gallery-card,
+        .contact-card {
+            border: none;
+            border-radius: 20px;
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+            height: 100%;
+        }
+
+        .info-card .card-body,
+        .notice-card .card-body,
+        .contact-card .card-body {
+            padding: 1.8rem;
+        }
+
+        .about-highlight {
+            background: linear-gradient(135deg, #111, #1a1a1d);
+            color: #fff;
+            border: 1px solid rgba(212, 175, 55, 0.18);
+        }
+
+        .about-highlight h5 {
+            color: var(--gold);
+        }
+
+        .gallery-card img {
+            width: 100%;
+            height: 240px;
+            object-fit: cover;
+        }
+
+        .notice-badge {
+            background: rgba(212, 175, 55, 0.14);
+            color: var(--gold-dark);
+            border: 1px solid rgba(212, 175, 55, 0.28);
+            border-radius: 999px;
+            padding: 0.35rem 0.7rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .notice-content {
+            color: #555;
+            white-space: pre-line;
+            line-height: 1.7;
+        }
+
+        .contact-section {
+            background: linear-gradient(135deg, #0f0f10, #1a1a1d);
+            color: #fff;
+        }
+
+        .contact-section .section-title {
+            color: #fff;
+        }
+
+        .contact-card {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(212, 175, 55, 0.18);
+            box-shadow: none;
+        }
+
+        .contact-card a {
+            color: var(--gold-soft);
+            text-decoration: none;
+        }
+
+        .contact-card a:hover {
+            color: var(--gold);
+        }
+
+        .communication-section div {
+            color: #f1f1f1;
+            font-weight: 500;
+        }
+
+        .communication-section i {
+            color: var(--gold);
+        }
+
+        .footer {
+            background: #0b0b0c;
+            color: #bbb;
+            padding: 24px 0;
+            text-align: center;
+        }
+
+        .comment-preview strong {
+            color: var(--charcoal);
+        }
+
+        .modal-body {
+            color: #222;
+        }
+
+        .modal-body strong,
+        .modal-body label {
+            color: #111;
+        }
+
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 2.2rem;
+            }
+
+            .section {
+                padding: 70px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-dark navbar-custom fixed-top">
+    <div class="container">
+        <a class="navbar-brand fw-bold" href="#home">NTSWANE</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#publicNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="publicNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item"><a class="nav-link" href="#home">Home</a></li>
+                <li class="nav-item"><a class="nav-link" href="#about">About Us</a></li>
+                <li class="nav-item"><a class="nav-link" href="#gallery">Gallery</a></li>
+                <li class="nav-item"><a class="nav-link" href="#notices">Notices</a></li>
+                <li class="nav-item"><a class="nav-link" href="#contact">Contact</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<section id="home" class="hero-section">
+    <div class="container">
+        <div class="hero-content">
+            <img src="/static/images/logo.jpg" alt="Ntswane Logo" class="hero-logo">
+
+            <h1 class="hero-title mb-3">
+                Welcome to <span>Ntswane</span>
+            </h1>
+
+            <p class="hero-text mb-4">
+                The official community communication portal for notices, announcements, service updates, and important public information.
+                Stay informed through one trusted platform built for the Ntswane community.
+            </p>
+
+            <div class="d-flex flex-wrap gap-3">
+                <a href="#notices" class="btn btn-gold">View Latest Notices</a>
+                <a href="#contact" class="btn btn-outline-light">Contact Us</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="about" class="section">
+    <div class="container">
+        <h2 class="section-title">About Ntswane</h2>
+        <div class="section-line"></div>
+
+        <div class="row g-4">
+            <div class="col-lg-7">
+                <div class="card info-card">
+                    <div class="card-body">
+                        <p class="mb-3">
+                            Ntswane is committed to improving communication, transparency, and access to important information for the community.
+                            This platform serves as a central point for official notices, updates, and announcements.
+                        </p>
+                        <p class="mb-3">
+                            Residents can use this website to stay informed about community developments, important service information,
+                            scheduled updates, and future communication initiatives.
+                        </p>
+                        <p class="mb-0">
+                            The broader communication system also supports SMS notifications, email communication,
+                            and future WhatsApp integration to make sure information reaches the right people at the right time.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-5">
+                <div class="card info-card about-highlight">
+                    <div class="card-body">
+                        <h5 class="mb-3">Our Purpose</h5>
+                        <p class="mb-3">
+                            To provide a reliable, professional, and accessible communication platform for the Ntswane community.
+                        </p>
+
+                        <h5 class="mb-3">Our Focus</h5>
+                        <ul class="mb-0">
+                            <li>Clear community communication</li>
+                            <li>Official public notices</li>
+                            <li>Reliable updates and alerts</li>
+                            <li>Improved resident access to information</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="gallery" class="section bg-light">
+    <div class="container">
+        <h2 class="section-title">Ntswane Gallery</h2>
+        <div class="section-line"></div>
+
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card gallery-card">
+                    <img src="/static/images/gallery-1.png" alt="Ntswane Gallery 1">
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card gallery-card">
+                    <img src="/static/images/gallery-2.png" alt="Ntswane Gallery 2">
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card gallery-card">
+                    <img src="/static/images/gallery-3.png" alt="Ntswane Gallery 3">
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="notices" class="section">
+    <div class="container">
+        <h2 class="section-title">Latest Notices</h2>
+        <div class="section-line"></div>
+
+        <div class="row g-4">
+            {% for notice in notices %}
+            <div class="col-12">
+                <div class="card notice-card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
+                            <div>
+                                <h4 class="mb-1">{{ notice.title }}</h4>
+                                <small class="text-muted">
+                                    Posted on {{ notice.created_at.strftime('%d %B %Y at %H:%M') if notice.created_at else '' }}
+                                </small>
+                            </div>
+                            <span class="notice-badge">
+                                {{ notice.audience|capitalize if notice.audience else 'Community' }}
+                            </span>
+                        </div>
+
+                        <div class="notice-content mb-4">
+                            {{ notice.content }}
+                        </div>
+
+                        <!-- Comment Form -->
+                        <div class="border-top pt-4 mt-3">
+                            <h6 class="mb-3">Leave a Comment</h6>
+                            <form method="POST" action="/notice/{{ notice.id }}/comment">
+                                <div class="row g-3">
+                                    <div class="col-md-4">
+                                        <input
+                                            type="text"
+                                            name="name"
+                                            class="form-control"
+                                            placeholder="Your name"
+                                            required
+                                        >
+                                    </div>
+                                    <div class="col-md-8">
+                                        <input
+                                            type="text"
+                                            name="comment"
+                                            class="form-control"
+                                            placeholder="Write your comment"
+                                            required
+                                        >
+                                    </div>
+                                </div>
+                                <div class="mt-3">
+                                    <button type="submit" class="btn btn-gold btn-sm">Post Comment</button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- Latest 2 Comments -->
+                        <div class="border-top pt-4 mt-4">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h6 class="mb-0">Comments</h6>
+                                {% set total_comments = all_comments_by_notice.get(notice.id, [])|length %}
+                                {% if total_comments > 2 %}
+                                <button
+                                    type="button"
+                                    class="btn btn-outline-dark btn-sm"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#commentsModal{{ notice.id }}"
+                                >
+                                    More Comments
+                                </button>
+                                {% endif %}
+                            </div>
+
+                            {% set preview_comments = comments_by_notice.get(notice.id, []) %}
+                            {% if preview_comments %}
+                                {% for item in preview_comments %}
+                                <div class="comment-preview mb-3 p-3 rounded" style="background:#fafafa; border:1px solid #eee;">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <strong>{{ item.name }}</strong>
+                                        <small class="text-muted">
+                                            {{ item.created_at.strftime('%d %b %Y %H:%M') if item.created_at else '' }}
+                                        </small>
+                                    </div>
+                                    <div>{{ item.comment }}</div>
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                                <div class="text-muted">No comments yet.</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Comments Modal -->
+            <div class="modal fade" id="commentsModal{{ notice.id }}" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-lg modal-dialog-scrollable">
+                    <div class="modal-content">
+                        <div class="modal-header" style="background:#111; color:#d4af37;">
+                            <h5 class="modal-title">{{ notice.title }} - Comments</h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <div><strong>Notice:</strong> {{ notice.title }}</div>
+                                <div class="text-muted small">
+                                    Posted on {{ notice.created_at.strftime('%d %B %Y at %H:%M') if notice.created_at else '' }}
+                                </div>
+                            </div>
+
+                            <hr>
+
+                            {% set modal_comments = all_comments_by_notice.get(notice.id, []) %}
+                            {% if modal_comments %}
+                                {% for item in modal_comments %}
+                                <div class="mb-3 p-3 rounded" style="background:#fafafa; border:1px solid #eee;">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <strong>{{ item.name }}</strong>
+                                        <small class="text-muted">
+                                            {{ item.created_at.strftime('%d %b %Y %H:%M') if item.created_at else '' }}
+                                        </small>
+                                    </div>
+                                    <div>{{ item.comment }}</div>
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                                <div class="text-muted">No comments yet.</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-dark" data-bs-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {% else %}
+            <div class="col-12">
+                <div class="card notice-card">
+                    <div class="card-body text-center text-muted">
+                        No notices have been published yet.
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<section id="contact" class="section contact-section">
+    <div class="container">
+        <h2 class="section-title">Contact Us</h2>
+        <div class="section-line"></div>
+
+        <div class="row g-4">
+            <div class="col-lg-4">
+                <div class="card contact-card">
+                    <div class="card-body communication-section">
+                        <h5 class="mb-3" style="color: var(--gold);">General Enquiries</h5>
+                        <div class="mb-2"><strong>Email:</strong> <a href="mailto:info@ntswane.co.za">info@ntswane.co.za</a></div>
+                        <div class="mb-0"><strong>Phone:</strong> <a href="tel:+27828777955">+27 82 877 7955</a></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="card contact-card">
+                    <div class="card-body communication-section">
+                        <h5 class="mb-3" style="color: var(--gold);">Official Website</h5>
+                        <div class="mb-0">
+                            Visit <a href="https://ntswane.co.za">www.ntswane.co.za</a> for official information,
+                            updates and public notices. To update your profile click 
+                            <a href="/update-my-info"><b>here</b></a>.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="card contact-card">
+                    <div class="card-body communication-section">
+                        <h5 class="mb-3" style="color: var(--gold);">Communication Channels</h5>
+                        <div class="mb-2">✔ Website Notices</div>
+                        <div class="mb-2">✔ SMS Alerts</div>
+                        <div class="mb-2">✔ Email Notifications</div>
+                        <div>✔ Future WhatsApp Updates</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="footer">
+    <div class="container">
+        © 2026 Ntswane. All rights reserved.
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

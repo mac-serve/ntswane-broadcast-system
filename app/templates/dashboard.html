@@ -1,0 +1,316 @@
+{% extends "layout.html" %}
+
+{% block title %}Dashboard | MAC-SERVER{% endblock %}
+
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="mb-1">Dashboard Overview</h3>
+        <p class="text-muted mb-0">Communication activity and delivery performance</p>
+    </div>
+</div>
+
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-body">
+        <form method="GET" action="/dashboard" class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label">Month</label>
+                <select name="month" class="form-select">
+                    <option value="">All Months</option>
+                    {% for m in available_months %}
+                        <option value="{{ m }}" {% if month == m %}selected{% endif %}>
+                            {{ m }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label">Channel</label>
+                <select name="channel" class="form-select">
+                    <option value="">All</option>
+                    <option value="sms" {% if channel == 'sms' %}selected{% endif %}>SMS</option>
+                    <option value="email" {% if channel == 'email' %}selected{% endif %}>Email</option>
+                    <option value="whatsapp" {% if channel == 'whatsapp' %}selected{% endif %}>WhatsApp</option>
+                </select>
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label">Status</label>
+                <select name="status" class="form-select">
+                    <option value="">All</option>
+                    <option value="sent" {% if status == 'sent' %}selected{% endif %}>Sent</option>
+                    <option value="failed" {% if status == 'failed' %}selected{% endif %}>Failed</option>
+                    <option value="pending" {% if status == 'pending' %}selected{% endif %}>Pending</option>
+                    <option value="delivered" {% if status == 'delivered' %}selected{% endif %}>Delivered</option>
+                </select>
+            </div>
+
+            <div class="col-12 d-flex gap-2">
+                <button class="btn btn-dark">Apply Filters</button>
+                <a href="/dashboard" class="btn btn-outline-secondary">Reset</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-body">
+                <small class="text-muted">Total Clients</small>
+                <h2 class="mt-2">{{ total_clients }}</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-body">
+                <small class="text-muted">Active Clients</small>
+                <h2 class="mt-2">{{ active_clients }}</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-body">
+                <small class="text-muted">Total Broadcasts</small>
+                <h2 class="mt-2">{{ total_broadcasts }}</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-body">
+                <small class="text-muted">Broadcasts In Progress</small>
+                <h2 class="mt-2">{{ processing_broadcasts }}</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-body">
+                <small class="text-muted">Filtered Logs</small>
+                <h2 class="mt-2">{{ total_logs }}</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-body">
+                <small class="text-muted">Sent</small>
+                <h3 class="mt-2 text-success">{{ sent_count }}</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-body">
+                <small class="text-muted">Failed</small>
+                <h3 class="mt-2 text-danger">{{ failed_count }}</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-body">
+                <small class="text-muted">Pending</small>
+                <h3 class="mt-2 text-warning">{{ pending_count }}</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-body">
+                <small class="text-muted">Delivered</small>
+                <h3 class="mt-2 text-primary">{{ delivered_count }}</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-lg-4">
+        <div class="card shadow-sm border-0">
+            <div class="card-body">
+                <h5 class="mb-3">Channel Breakdown</h5>
+                <div class="chart-container">
+                    <canvas id="channelChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card shadow-sm border-0">
+            <div class="card-body">
+                <h5 class="mb-3">Status Breakdown</h5>
+                <div class="chart-container">
+                    <canvas id="statusChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card shadow-sm border-0">
+            <div class="card-body">
+                <h5 class="mb-3">Last 7 Days Volume</h5>
+                <div class="chart-container">
+                    <canvas id="volumeChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="card shadow-sm border-0">
+            <div class="card-body">
+                <h5 class="mb-3">Recent Broadcasts</h5>
+
+                <div class="table-responsive">
+                    <table class="table table-sm align-middle">
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Audience</th>
+                                <th>Progress</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in recent_broadcasts %}
+                            {% set processed = (item.sent_count or 0) + (item.failed_count or 0) %}
+                            {% set progress = ((processed / item.queued_count) * 100) if item.queued_count and item.queued_count > 0 else 0 %}
+                            <tr>
+                                <td>{{ item.title }}</td>
+                                <td>{{ item.audience }}</td>
+                                <td style="min-width: 180px;">
+                                    <div class="small mb-1">
+                                        {{ processed }}/{{ item.queued_count or 0 }}
+                                    </div>
+                                    <div class="progress" style="height: 8px;">
+                                        <div class="progress-bar" role="progressbar" style="width: {{ progress|round(0) }}%;"></div>
+                                    </div>
+                                </td>
+                                <td>{{ item.created_at.strftime('%Y-%m-%d %H:%M') if item.created_at else '' }}</td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="4" class="text-muted text-center">No broadcasts found</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card shadow-sm border-0">
+            <div class="card-body">
+                <h5 class="mb-3">Recent Failed Messages</h5>
+
+                <div class="table-responsive">
+                    <table class="table table-sm align-middle">
+                        <thead>
+                            <tr>
+                                <th>Recipient</th>
+                                <th>Channel</th>
+                                <th>Error</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for log in recent_failed_logs %}
+                            <tr>
+                                <td>{{ log.recipient or log.phone_number or '-' }}</td>
+                                <td>{{ log.channel }}</td>
+                                <td class="text-danger small">{{ log.error_message or '-' }}</td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="3" class="text-muted text-center">No failed messages found</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+const channelChart = new Chart(document.getElementById('channelChart'), {
+    type: 'doughnut',
+    data: {
+        labels: {{ channel_labels | tojson | safe }},
+        datasets: [{
+            data: {{ channel_values | tojson | safe }},
+            borderWidth: 1
+        }]
+    }
+});
+
+const statusChart = new Chart(document.getElementById('statusChart'), {
+    type: 'bar',
+    data: {
+        labels: {{ status_labels | tojson | safe }},
+        datasets: [{
+            label: 'Messages',
+            data: {{ status_values | tojson | safe }},
+            borderWidth: 1
+        }]
+    },
+    options: {
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+});
+
+const volumeChart = new Chart(document.getElementById('volumeChart'), {
+    type: 'line',
+    data: {
+        labels: {{ volume_labels  | tojson | safe }},
+        datasets: [{
+            label: 'Messages',
+            data: {{ volume_values  | tojson | safe }},
+            fill: false,
+            tension: 0.3,
+            borderWidth: 2
+        }]
+    },
+    options: {
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+});
+</script>
+{% endblock %}

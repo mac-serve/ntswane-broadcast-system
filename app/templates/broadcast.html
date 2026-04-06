@@ -1,0 +1,50 @@
+{% extends "layout.html" %}
+
+{% block title %}Broadcast | MAC-SERVER{% endblock %}
+
+{% block content %}
+
+<h4 class="mb-4">Create Broadcast</h4>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+
+        <form method="POST" action="/broadcast/send">
+
+            <div class="mb-3">
+                <label class="form-label">Message Title</label>
+                <input type="text" name="title" class="form-control" required>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Message Content</label>
+                <textarea name="content" class="form-control" rows="5" required></textarea>
+                <small class="text-muted">
+                    Tip: Keep SMS short. Add a link to full update on your website.
+                </small>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Send To</label>
+                <select name="audience" class="form-select">
+                    <option value="all">All Subscribed Users</option>
+                    <option value="whatsapp">WhatsApp Users Only</option>
+                    <option value="sms">SMS Users Only</option>
+                    <option value="email">Email Users</option>
+                </select>
+            </div>
+
+            <div class="alert alert-warning">
+                This will send the message to all selected users. Please confirm content before sending.
+            </div>
+
+            <button type="submit" class="btn btn-success">
+                Send Broadcast
+            </button>
+
+        </form>
+
+    </div>
+</div>
+
+{% endblock %}

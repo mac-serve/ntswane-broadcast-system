@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login | Ntswane Village</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap 5 CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            background:
+                radial-gradient(circle at top left, rgba(212, 175, 55, 0.18), transparent 30%),
+                radial-gradient(circle at bottom right, rgba(255, 215, 100, 0.12), transparent 25%),
+                linear-gradient(135deg, #050505 0%, #111111 40%, #1a1408 75%, #2c210c 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        body::before,
+        body::after {
+            content: "";
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            z-index: 0;
+        }
+
+        body::before {
+            width: 260px;
+            height: 260px;
+            background: rgba(212, 175, 55, 0.18);
+            top: 8%;
+            left: 8%;
+        }
+
+        body::after {
+            width: 320px;
+            height: 320px;
+            background: rgba(255, 193, 7, 0.10);
+            bottom: 5%;
+            right: 8%;
+        }
+
+        .login-wrapper {
+            width: 100%;
+            max-width: 360px; /* smaller card */
+            padding: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .login-card {
+            background: rgba(18, 18, 18, 0.82);
+            border: 1px solid rgba(212, 175, 55, 0.22);
+            border-radius: 20px;
+            box-shadow:
+                0 10px 40px rgba(0, 0, 0, 0.45),
+                0 0 0 1px rgba(255, 215, 0, 0.04) inset;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            overflow: hidden;
+        }
+
+        .login-card .card-body {
+            padding: 1.6rem;
+        }
+
+        .brand-logo {
+            width: 110px;
+            max-width: 100%;
+            display: block;
+            margin: 0 auto 12px;
+        }
+
+        .brand-title {
+            font-weight: 700;
+            font-size: 1.35rem;
+            color: #f5d76e;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+            text-align: center;
+        }
+
+        .brand-subtitle {
+            color: #cfcfcf;
+            font-size: 0.90rem;
+            margin-bottom: 1.4rem;
+            text-align: center;
+        }
+
+        .form-label {
+            color: #f3e7c2;
+            font-weight: 500;
+            margin-bottom: 6px;
+            font-size: 0.92rem;
+        }
+
+        .input-group-text {
+            background: #1c1c1c;
+            color: #d4af37;
+            border: 1px solid #3a3120;
+        }
+
+        .form-control {
+            background: #111;
+            border: 1px solid #3a3120;
+            color: #fff;
+            padding: 0.72rem 0.9rem;
+            font-size: 0.95rem;
+        }
+
+        .form-control:focus {
+            background: #111;
+            color: #fff;
+            border-color: #d4af37;
+            box-shadow: 0 0 0 0.18rem rgba(212, 175, 55, 0.18);
+        }
+
+        .form-control::placeholder {
+            color: #8d8d8d;
+        }
+
+        .toggle-password {
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .form-check-label,
+        .forgot-link,
+        .footer-text {
+            color: #d6d6d6;
+            font-size: 0.86rem;
+        }
+
+        .forgot-link {
+            text-decoration: none;
+        }
+
+        .forgot-link:hover {
+            color: #f5d76e;
+            text-decoration: underline;
+        }
+
+        .btn-login {
+            background: linear-gradient(135deg, #d4af37, #f0c14b);
+            border: none;
+            color: #111;
+            font-weight: 700;
+            padding: 0.75rem;
+            border-radius: 12px;
+            transition: 0.3s ease;
+            box-shadow: 0 6px 18px rgba(212, 175, 55, 0.22);
+        }
+
+        .btn-login:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 22px rgba(212, 175, 55, 0.32);
+            color: #000;
+        }
+
+        .divider {
+            height: 1px;
+            background: linear-gradient(to right, transparent, rgba(212, 175, 55, 0.35), transparent);
+            margin: 1.2rem 0 0.8rem;
+        }
+
+        .footer-text a {
+            color: #f5d76e;
+            text-decoration: none;
+        }
+
+        .footer-text a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 576px) {
+            .login-wrapper {
+                max-width: 340px;
+            }
+
+            .login-card .card-body {
+                padding: 1.3rem;
+            }
+
+            .brand-logo {
+                width: 95px;
+            }
+
+            .brand-title {
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="login-wrapper">
+        <div class="card login-card">
+            <div class="card-body">
+
+                <div class="text-center">
+                    <!-- Replace with your actual logo path -->
+                    <img src="/static/images/logo.jpg" alt="Ntswane Village Logo" class="brand-logo">
+
+                    <h2 class="brand-title">Ntswane Village</h2>
+                    <p class="brand-subtitle">Secure access to your portal</p>
+                </div>
+
+                <form method="POST" action="/login">
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email Address</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-envelope-fill"></i></span>
+                            <input type="email" class="form-control" name="email" id="email" placeholder="Enter your email">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Password</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-lock-fill"></i></span>
+                            <input type="password" class="form-control" name="password" id="password" placeholder="Enter your password">
+                            <span class="input-group-text toggle-password" onclick="togglePassword()">
+                                <i class="bi bi-eye-fill" id="toggleIcon"></i>
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="rememberMe">
+                            <label class="form-check-label" for="rememberMe">
+                                Remember me
+                            </label>
+                        </div>
+                        <a href="/forgot-password" class="forgot-link">Forgot password?</a>
+                    </div>
+
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-login">Sign In</button>
+                    </div>
+                </form>
+
+                <div class="divider"></div>
+
+                <p class="text-center footer-text mb-0">
+                    Need help? <a href="#">Contact Administrator</a>
+                </p>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function togglePassword() {
+            const password = document.getElementById("password");
+            const icon = document.getElementById("toggleIcon");
+
+            if (password.type === "password") {
+                password.type = "text";
+                icon.classList.remove("bi-eye-fill");
+                icon.classList.add("bi-eye-slash-fill");
+            } else {
+                password.type = "password";
+                icon.classList.remove("bi-eye-slash-fill");
+                icon.classList.add("bi-eye-fill");
+            }
+        }
+    </script>
+
+</body>
+</html>

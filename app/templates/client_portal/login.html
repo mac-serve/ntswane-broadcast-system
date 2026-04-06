@@ -1,0 +1,111 @@
+{% extends "client_portal/base.html" %}
+
+{% block title %}Update Your Information{% endblock %}
+
+{% block body %}
+<div class="portal-header d-flex justify-content-between align-items-center">
+    <div>
+        <h4>Community Information Update</h4>
+        <div class="brand-small mt-1">
+            Access your details securely to review and update your contact information.
+        </div>
+    </div>
+
+    <a href="/" class="btn btn-light btn-sm">
+        ← Back to Website
+    </a>
+</div>
+
+<div class="portal-body">
+    {% if error %}
+        <div class="alert alert-danger">{{ error }}</div>
+    {% endif %}
+
+    {% if success %}
+        <div class="alert alert-success">{{ success }}</div>
+    {% endif %}
+
+    <form method="POST" action="/update-my-info/login" novalidate>
+        <div class="mb-3">
+            <label class="form-label">Phone Number</label>
+            <input
+                type="tel"
+                class="form-control"
+                name="phone_number"
+                id="phone_number"
+                placeholder="e.g. 0812345678"
+                maxlength="11"
+                required
+                oninput="validatePhone()"
+            >
+            <small id="phoneError" class="text-danger d-none">
+                Phone number must start with 0 and contain 10-11 digits.
+            </small>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">ID Number</label>
+            <input
+                type="text"
+                class="form-control"
+                name="id_number"
+                required
+            >
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100" id="submitBtn" disabled>
+            Continue
+        </button>
+    </form>
+
+    <div class="footer-note mt-4">
+        Use the phone number and ID number already registered with the community office.
+    </div>
+    <div class="footer-note mt-3">
+        If you cannot log in, please contact the community office.
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function validateForm() {
+        const phoneInput = document.getElementById("phone_number");
+        const idInput = document.querySelector("input[name='id_number']");
+        const submitBtn = document.getElementById("submitBtn");
+        const error = document.getElementById("phoneError");
+
+        // clean phone
+        phoneInput.value = phoneInput.value.replace(/\D/g, "");
+
+        const phoneValid = /^0\d{9,10}$/.test(phoneInput.value);
+        const idValid = idInput.value.trim().length > 3;
+
+        // phone error display
+        if (!phoneValid && phoneInput.value.length > 0) {
+            error.classList.remove("d-none");
+        } else {
+            error.classList.add("d-none");
+        }
+
+        // enable button only if BOTH valid
+        if (phoneValid && idValid) {
+            submitBtn.disabled = false;
+        } else {
+            submitBtn.disabled = true;
+        }
+    }
+
+    // run on input
+    document.addEventListener("DOMContentLoaded", function () {
+        const phoneInput = document.getElementById("phone_number");
+        const idInput = document.querySelector("input[name='id_number']");
+
+        phoneInput.addEventListener("input", validateForm);
+        idInput.addEventListener("input", validateForm);
+
+        // ensure disabled on load
+        document.getElementById("submitBtn").disabled = true;
+    });
+</script>
+{% endblock %}

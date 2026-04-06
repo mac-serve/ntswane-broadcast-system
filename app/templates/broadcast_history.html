@@ -1,0 +1,187 @@
+{% extends "layout.html" %}
+
+{% block title %}Broadcast History | MAC-SERVER{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="mb-1">Broadcast History</h3>
+        <p class="text-muted mb-0">Track broadcast queue progress and delivery results</p>
+    </div>
+</div>
+
+<div class="card shadow-sm border-0">
+    <div class="card-body">
+
+        <form method="GET" action="/broadcast/history" class="row g-2 mb-3">
+            <div class="col-md-5">
+                <input
+                    type="text"
+                    name="search"
+                    class="form-control"
+                    placeholder="Search by title..."
+                    value="{{ search or '' }}"
+                >
+            </div>
+
+            <div class="col-md-2">
+                <select name="per_page" class="form-select" onchange="this.form.submit()">
+                    <option value="10" {% if per_page == 10 %}selected{% endif %}>10</option>
+                    <option value="25" {% if per_page == 25 %}selected{% endif %}>25</option>
+                    <option value="50" {% if per_page == 50 %}selected{% endif %}>50</option>
+                    <option value="100" {% if per_page == 100 %}selected{% endif %}>100</option>
+                </select>
+            </div>
+
+            <div class="col-md-2">
+                <input type="hidden" name="page" value="1">
+                <button type="submit" class="btn btn-dark w-100">Search</button>
+            </div>
+
+            <div class="col-md-3 d-flex align-items-center justify-content-md-end">
+                <strong>Total: {{ total }}</strong>
+            </div>
+        </form>
+
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Audience</th>
+                        <th>Queued</th>
+                        <th>Sent</th>
+                        <th>Failed</th>
+                        <th>Progress</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in broadcasts %}
+                    {% set processed = (item.sent_count or 0) + (item.failed_count or 0) %}
+                    {% set progress = ((processed / item.queued_count) * 100) if item.queued_count and item.queued_count > 0 else 0 %}
+                    <tr>
+                        <td>
+                            <button
+                                type="button"
+                                class="btn btn-link p-0 text-decoration-none"
+                                onclick="openBroadcastModal(this)"
+                                data-title="{{ item.title or '' }}"
+                                data-content="{{ item.message or item.content or '' }}"
+                                data-audience="{{ item.audience or '' }}"
+                                data-date="{{ item.created_at.strftime('%Y-%m-%d %H:%M') if item.created_at else '' }}"
+                            >
+                                {{ item.title }}
+                            </button>
+                        </td>
+                        <td>{{ item.audience }}</td>
+                        <td>{{ item.queued_count or 0 }}</td>
+                        <td class="text-success">{{ item.sent_count or 0 }}</td>
+                        <td class="text-danger">{{ item.failed_count or 0 }}</td>
+                        <td style="min-width: 220px;">
+                            <div class="small mb-1">{{ progress|round(0) }}%</div>
+                            <div class="progress" style="height: 8px;">
+                                <div class="progress-bar" role="progressbar" style="width: {{ progress|round(0) }}%;"></div>
+                            </div>
+                        </td>
+                        <td>{{ item.created_at.strftime('%Y-%m-%d %H:%M') if item.created_at else '' }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="7" class="text-center text-muted">No broadcast history found</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <nav class="mt-3">
+            <ul class="pagination flex-wrap">
+                {% if page > 1 %}
+                <li class="page-item">
+                    <a class="page-link" href="?page=1&per_page={{ per_page }}&search={{ search }}">First</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page - 1 }}&per_page={{ per_page }}&search={{ search }}">Previous</a>
+                </li>
+                {% endif %}
+
+                {% for p in range(start_page, end_page + 1) %}
+                <li class="page-item {% if p == page %}active{% endif %}">
+                    <a class="page-link" href="?page={{ p }}&per_page={{ per_page }}&search={{ search }}">{{ p }}</a>
+                </li>
+                {% endfor %}
+
+                {% if page < total_pages %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page + 1 }}&per_page={{ per_page }}&search={{ search }}">Next</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ total_pages }}&per_page={{ per_page }}&search={{ search }}">Last</a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+
+    </div>
+</div>
+
+<!-- Broadcast Detail Modal -->
+<div class="modal fade" id="broadcastDetailModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-dark text-white">
+                <h5 class="modal-title">Broadcast Details</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Title</label>
+                    <div id="modal_broadcast_title" class="form-control bg-light"></div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Content</label>
+                    <div id="modal_broadcast_content" class="form-control bg-light" style="min-height: 140px; white-space: pre-wrap;"></div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Audience</label>
+                    <div id="modal_broadcast_audience" class="form-control bg-light"></div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Date Posted</label>
+                    <div id="modal_broadcast_date" class="form-control bg-light"></div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-dark" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function openBroadcastModal(button) {
+    document.getElementById("modal_broadcast_title").textContent =
+        button.getAttribute("data-title") || "";
+
+    document.getElementById("modal_broadcast_content").textContent =
+        button.getAttribute("data-content") || "";
+
+    document.getElementById("modal_broadcast_audience").textContent =
+        button.getAttribute("data-audience") || "";
+
+    document.getElementById("modal_broadcast_date").textContent =
+        button.getAttribute("data-date") || "";
+
+    const modal = new bootstrap.Modal(document.getElementById("broadcastDetailModal"));
+    modal.show();
+}
+</script>
+{% endblock %}
