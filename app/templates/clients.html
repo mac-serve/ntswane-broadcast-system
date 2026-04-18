@@ -10,69 +10,116 @@
 </div>
 
 <div class="card mb-4">
-    <div class="card-header bg-dark text-white">Add Client</div>
-    <div class="card-body">
-        <form method="POST" action="/clients/add" id="addClientForm">
-            <input type="hidden" name="page" value="{{ page }}">
-            <input type="hidden" name="per_page" value="{{ per_page }}">
-            <input type="hidden" name="search" value="{{ search }}">
+    <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+        <span>Add Client</span>
+        <button
+            class="btn btn-sm btn-outline-light"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#addClientCollapse"
+            aria-expanded="true"
+            aria-controls="addClientCollapse"
+        >
+            Toggle
+        </button>
+    </div>
 
-            <div class="row">
-                <div class="col-md-4 mb-3">
-                    <label class="form-label">Full Name</label>
-                    <input type="text" class="form-control" name="name" required>
-                </div>
+    <div class="collapse show" id="addClientCollapse">
+        <div class="card-body">
+            <form method="POST" action="/clients/add" id="addClientForm">
+                <input type="hidden" name="page" value="{{ page }}">
+                <input type="hidden" name="per_page" value="{{ per_page }}">
+                <input type="hidden" name="search" value="{{ search }}">
 
-                <div class="col-md-4 mb-3">
-                    <label class="form-label">Phone Number</label>
-                    <input
-                        type="tel"
-                        class="form-control"
-                        id="add_phone_number"
-                        name="phone_number"
-                        pattern="0[0-9]{9,10}"
-                        placeholder="e.g. 0812345678"
-                        maxlength="11"
-                        required
-                        oninput="validatePhoneField('add_phone_number', 'addPhoneError', 'addSubmitBtn')"
-                    >
-                    <small id="addPhoneError" class="text-danger d-none">
-                        Phone must start with 0 and contain 10-11 digits.
-                    </small>
-                </div>
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Full Name</label>
+                        <input type="text" class="form-control" name="name" required>
+                    </div>
 
-                <div class="col-md-4 mb-3">
-                    <label class="form-label">ID Number</label>
-                    <input type="text" class="form-control" name="id_number">
-                </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Phone Number</label>
+                        <input
+                            type="tel"
+                            class="form-control"
+                            id="add_phone_number"
+                            name="phone_number"
+                            pattern="0[0-9]{9,10}"
+                            placeholder="e.g. 0812345678"
+                            maxlength="11"
+                            required
+                            oninput="validatePhoneField('add_phone_number', 'addPhoneError', 'addSubmitBtn')"
+                        >
+                        <small id="addPhoneError" class="text-danger d-none">
+                            Phone must start with 0 and contain 10-11 digits.
+                        </small>
+                    </div>
 
-                <div class="col-md-4 mb-3">
-                    <label class="form-label">Email</label>
-                    <input type="email" class="form-control" name="email">
-                </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">ID Number</label>
+                        <input type="text" class="form-control" name="id_number">
+                    </div>
 
-                <div class="col-md-4 mb-3">
-                    <label class="form-label">Stand Number</label>
-                    <input type="text" class="form-control" name="stand_number">
-                </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-control" name="email">
+                    </div>
 
-                <div class="col-md-4 mb-3">
-                    <label class="form-label">Yard Size (m²)</label>
-                    <input type="number" step="0.01" class="form-control" name="yard_size">
-                </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Stand Number</label>
+                        <input type="text" class="form-control" name="stand_number">
+                    </div>
 
-                <div class="col-md-4 mb-3 d-flex align-items-center">
-                    <div class="form-check mt-4">
-                        <input class="form-check-input" type="checkbox" name="has_whatsapp" value="true" id="add_has_whatsapp">
-                        <label class="form-check-label" for="add_has_whatsapp">
-                            Has WhatsApp
-                        </label>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Yard Size (m²)</label>
+                        <input type="number" step="0.01" class="form-control" name="yard_size">
                     </div>
                 </div>
-            </div>
 
-            <button type="submit" class="btn btn-dark" id="addSubmitBtn">Add Client</button>
-        </form>
+                <hr>
+                <h6 class="mb-3">Beneficiary Details</h6>
+
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Beneficiary Name & Surname</label>
+                        <input type="text" class="form-control" name="beneficiary_name_surname">
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Beneficiary ID Number</label>
+                        <input type="text" class="form-control" name="beneficiary_id_number">
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Beneficiary Cell Number</label>
+                        <input
+                            type="tel"
+                            class="form-control"
+                            id="add_beneficiary_cell_number"
+                            name="beneficiary_cell_number"
+                            pattern="0[0-9]{9,10}"
+                            placeholder="e.g. 0812345678"
+                            maxlength="11"
+                            oninput="validateOptionalPhoneField('add_beneficiary_cell_number', 'addBeneficiaryPhoneError', 'addSubmitBtn')"
+                        >
+                        <small id="addBeneficiaryPhoneError" class="text-danger d-none">
+                            Beneficiary phone must start with 0 and contain 10-11 digits.
+                        </small>
+                    </div>
+
+                    <div class="col-md-4 mb-3 d-flex align-items-center">
+                        <div class="form-check mt-4">
+                            <input class="form-check-input" type="checkbox" name="has_whatsapp" value="true" id="add_has_whatsapp">
+                            <label class="form-check-label" for="add_has_whatsapp">
+                                Has WhatsApp
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-dark" id="addSubmitBtn">Add Client</button>
+            </form>
+        </div>
     </div>
 </div>
 
@@ -120,6 +167,9 @@
                         <th>Email</th>
                         <th>Stand</th>
                         <th>Yard Size</th>
+                        <th>Beneficiary Name & Surname</th>
+                        <th>Beneficiary ID Number</th>
+                        <th>Beneficiary Cell</th>
                         <th>WhatsApp</th>
                         <th>Status</th>
                         <th style="min-width: 220px;">Actions</th>
@@ -142,6 +192,9 @@
                                 -
                             {% endif %}
                         </td>
+                        <td>{{ client.beneficiary_name_surname or '-' }}</td>
+                        <td>{{ client.beneficiary_id_number or '-' }}</td>
+                        <td>{{ client.beneficiary_cell_number or '-' }}</td>
                         <td>
                             {% if client.has_whatsapp %}
                                 <span class="badge bg-success">Yes</span>
@@ -171,6 +224,9 @@
                                     data-yard-size="{{ client.yard_size if client.yard_size is not none else '' }}"
                                     data-has-whatsapp="{{ 'true' if client.has_whatsapp else 'false' }}"
                                     data-subscribed="{{ 'true' if client.subscribed else 'false' }}"
+                                    data-beneficiary-name-surname="{{ client.beneficiary_name_surname or '' }}"
+                                    data-beneficiary-id-number="{{ client.beneficiary_id_number or '' }}"
+                                    data-beneficiary-cell-number="{{ client.beneficiary_cell_number or '' }}"
                                 >
                                     Edit
                                 </button>
@@ -204,7 +260,7 @@
                     </tr>
                     {% else %}
                     <tr>
-                        <td colspan="10" class="text-center">No clients found.</td>
+                        <td colspan="13" class="text-center">No clients found.</td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -299,6 +355,32 @@
                             <input type="number" step="0.01" class="form-control" name="yard_size" id="edit_yard_size">
                         </div>
 
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Beneficiary Name & Surname</label>
+                            <input type="text" class="form-control" name="beneficiary_name_surname" id="edit_beneficiary_name_surname">
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Beneficiary ID Number</label>
+                            <input type="text" class="form-control" name="beneficiary_id_number" id="edit_beneficiary_id_number">
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Beneficiary Cell Number</label>
+                            <input
+                                type="tel"
+                                class="form-control"
+                                name="beneficiary_cell_number"
+                                id="edit_beneficiary_cell_number"
+                                pattern="0[0-9]{9,10}"
+                                maxlength="11"
+                                oninput="validateOptionalPhoneField('edit_beneficiary_cell_number', 'editBeneficiaryPhoneError', 'editSubmitBtn')"
+                            >
+                            <small id="editBeneficiaryPhoneError" class="text-danger d-none">
+                                Beneficiary phone must start with 0 and contain 10-11 digits.
+                            </small>
+                        </div>
+
                         <div class="col-md-6 mb-3 d-flex align-items-center">
                             <div class="form-check mt-4">
                                 <input class="form-check-input" type="checkbox" name="has_whatsapp" value="true" id="edit_has_whatsapp">
@@ -373,6 +455,30 @@ function validatePhoneField(inputId, errorId, submitBtnId) {
     }
 }
 
+function validateOptionalPhoneField(inputId, errorId, submitBtnId) {
+    const input = document.getElementById(inputId);
+    const error = document.getElementById(errorId);
+    const submitBtn = document.getElementById(submitBtnId);
+
+    input.value = input.value.replace(/\D/g, "");
+
+    if (input.value.trim() === "") {
+        error.classList.add("d-none");
+        submitBtn.disabled = false;
+        return;
+    }
+
+    const regex = /^0\d{9,10}$/;
+
+    if (!regex.test(input.value)) {
+        error.classList.remove("d-none");
+        submitBtn.disabled = true;
+    } else {
+        error.classList.add("d-none");
+        submitBtn.disabled = false;
+    }
+}
+
 function openEditModal(button) {
     const clientId = button.getAttribute("data-id");
 
@@ -385,7 +491,10 @@ function openEditModal(button) {
     document.getElementById("edit_yard_size").value = button.getAttribute("data-yard-size") || "";
     document.getElementById("edit_has_whatsapp").checked = button.getAttribute("data-has-whatsapp") === "true";
     document.getElementById("edit_subscribed").checked = button.getAttribute("data-subscribed") === "true";
-
+    document.getElementById("edit_beneficiary_name_surname").value = button.getAttribute("data-beneficiary-name-surname") || "";
+    document.getElementById("edit_beneficiary_id_number").value = button.getAttribute("data-beneficiary-id-number") || "";
+    document.getElementById("edit_beneficiary_cell_number").value = button.getAttribute("data-beneficiary-cell-number") || "";
+    validateOptionalPhoneField("edit_beneficiary_cell_number", "editBeneficiaryPhoneError", "editSubmitBtn");
     validatePhoneField("edit_phone_number", "editPhoneError", "editSubmitBtn");
 
     const modal = new bootstrap.Modal(document.getElementById("editClientModal"));

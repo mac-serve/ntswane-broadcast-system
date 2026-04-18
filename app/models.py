@@ -31,6 +31,10 @@ class Client(Base):
     
     id_number = Column(String(20))
 
+    beneficiary_name_surname = Column(String(255), nullable=True)
+    beneficiary_id_number = Column(String(255), nullable=True)
+    beneficiary_cell_number = Column(String(20), nullable=True)
+
     logs = relationship("MessageLog", back_populates="client")
 
 # -------------------------

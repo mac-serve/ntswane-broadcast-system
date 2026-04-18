@@ -38,6 +38,22 @@ def clean_phone_number(phone_number: str):
 
     return phone_number
 
+def clean_optional_phone_number(phone_number: str):
+    phone_number = clean_text(phone_number)
+
+    if not phone_number:
+        return None
+
+    phone_number = re.sub(r"\D", "", phone_number.strip())
+
+    if not re.fullmatch(r"0\d{9,10}", phone_number):
+        raise HTTPException(
+            status_code=400,
+            detail="Beneficiary phone number must start with 0 and contain 10-11 digits only."
+        )
+
+    return phone_number
+
 
 def build_clients_redirect(page=1, per_page=10, search=None):
     params = {
@@ -76,7 +92,10 @@ def clients_page(
                 Client.phone_number.ilike(f"%{search}%"),
                 Client.email.ilike(f"%{search}%"),
                 Client.stand_number.ilike(f"%{search}%"),
-                Client.id_number.ilike(f"%{search}%")
+                Client.id_number.ilike(f"%{search}%"),
+                Client.beneficiary_name_surname.ilike(f"%{search}%"),
+                Client.beneficiary_id_number.ilike(f"%{search}%"),
+                Client.beneficiary_cell_number.ilike(f"%{search}%")
             )
         )
 
@@ -122,6 +141,9 @@ async def add_client(
     email: str = Form(None),
     stand_number: str = Form(None),
     yard_size: str = Form(None),
+    beneficiary_name_surname: str = Form(None),
+    beneficiary_id_number: str = Form(None),
+    beneficiary_cell_number: str = Form(None),
     has_whatsapp: str = Form(None),
     page: int = Form(1),
     per_page: int = Form(10),
@@ -137,6 +159,10 @@ async def add_client(
     id_number = clean_text(id_number)
     email = clean_text(email)
     stand_number = clean_text(stand_number)
+
+    beneficiary_name_surname = clean_text(beneficiary_name_surname)
+    beneficiary_id_number = clean_text(beneficiary_id_number)
+    beneficiary_cell_number = clean_optional_phone_number(beneficiary_cell_number)
 
     yard_size_value = None
     if yard_size is not None and str(yard_size).strip() != "":
@@ -162,6 +188,9 @@ async def add_client(
         email=email,
         stand_number=stand_number,
         yard_size=yard_size_value,
+        beneficiary_name_surname=beneficiary_name_surname,
+        beneficiary_id_number=beneficiary_id_number,
+        beneficiary_cell_number=beneficiary_cell_number,
         has_whatsapp=has_whatsapp_value,
         subscribed=True,
         created_at=datetime.utcnow()
@@ -188,6 +217,9 @@ async def edit_client(
     email: str = Form(None),
     stand_number: str = Form(None),
     yard_size: str = Form(None),
+    beneficiary_name_surname: str = Form(None),
+    beneficiary_id_number: str = Form(None),
+    beneficiary_cell_number: str = Form(None),
     has_whatsapp: str = Form(None),
     subscribed: str = Form(None),
     page: int = Form(1),
@@ -213,6 +245,10 @@ async def edit_client(
     email = clean_text(email)
     stand_number = clean_text(stand_number)
 
+    beneficiary_name_surname = clean_text(beneficiary_name_surname)
+    beneficiary_id_number = clean_text(beneficiary_id_number)
+    beneficiary_cell_number = clean_optional_phone_number(beneficiary_cell_number)
+
     yard_size_value = None
     if yard_size is not None and str(yard_size).strip() != "":
         try:
@@ -235,6 +271,9 @@ async def edit_client(
     client.email = email
     client.stand_number = stand_number
     client.yard_size = yard_size_value
+    client.beneficiary_name_surname = beneficiary_name_surname
+    client.beneficiary_id_number = beneficiary_id_number
+    client.beneficiary_cell_number = beneficiary_cell_number
     client.has_whatsapp = True if has_whatsapp == "true" else False
     client.subscribed = True if subscribed == "true" else False
 
@@ -322,7 +361,10 @@ def download_clients(
             (Client.phone_number.ilike(f"%{search}%")) |
             (Client.email.ilike(f"%{search}%")) |
             (Client.stand_number.ilike(f"%{search}%")) |
-            (Client.id_number.ilike(f"%{search}%"))
+            (Client.id_number.ilike(f"%{search}%")) |
+            Client.beneficiary_name_surname.ilike(f"%{search}%") |
+            Client.beneficiary_id_number.ilike(f"%{search}%") |
+            Client.beneficiary_cell_number.ilike(f"%{search}%")
         )
 
     clients = query.order_by(Client.id.desc()).all()
@@ -336,6 +378,9 @@ def download_clients(
             "Email": c.email,
             "Stand Number": c.stand_number,
             "Yard Size": c.yard_size,
+            "Beneficiary Name & Surname": c.beneficiary_name_surname,
+            "Beneficiary ID Number": c.beneficiary_id_number,
+            "Beneficiary Cell Number": c.beneficiary_cell_number,
             "WhatsApp": c.has_whatsapp,
             "Subscribed": c.subscribed,
             "Created At": c.created_at
