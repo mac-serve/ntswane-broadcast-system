@@ -61,7 +61,13 @@ async def send_broadcast(
     message_body = f"{title}\n\n{content}"
 
     # 2️⃣ Select Audience
-    if audience == "all":
+    if audience == "web":
+        # No queue, just publish on website
+        broadcast.queued_count = 0
+        db.commit()
+        return RedirectResponse("/broadcast", status_code=303)
+
+    elif audience == "all":
         clients = db.query(Client).filter(
             Client.subscribed == True,
             Client.is_deleted == False
