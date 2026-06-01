@@ -77,42 +77,42 @@
                 </div>
 
                 <hr>
-                <h6 class="mb-3">Beneficiary Details</h6>
 
-                <div class="row">
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label">Beneficiary Name & Surname</label>
-                        <input type="text" class="form-control" name="beneficiary_name_surname">
-                    </div>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="mb-0">Beneficiary Details</h6>
+                    <button type="button" class="btn btn-sm btn-outline-dark" onclick="addBeneficiaryRow()">
+                        + Add Beneficiary
+                    </button>
+                </div>
 
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label">Beneficiary ID Number</label>
-                        <input type="text" class="form-control" name="beneficiary_id_number">
-                    </div>
+                <div id="beneficiariesContainer">
+                    <div class="beneficiary-row border rounded p-3 mb-3">
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Beneficiary Name & Surname</label>
+                                <input type="text" class="form-control" name="beneficiary_name_surname">
+                            </div>
 
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label">Beneficiary Cell Number</label>
-                        <input
-                            type="tel"
-                            class="form-control"
-                            id="add_beneficiary_cell_number"
-                            name="beneficiary_cell_number"
-                            pattern="0[0-9]{9,10}"
-                            placeholder="e.g. 0812345678"
-                            maxlength="11"
-                            oninput="validateOptionalPhoneField('add_beneficiary_cell_number', 'addBeneficiaryPhoneError', 'addSubmitBtn')"
-                        >
-                        <small id="addBeneficiaryPhoneError" class="text-danger d-none">
-                            Beneficiary phone must start with 0 and contain 10-11 digits.
-                        </small>
-                    </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Beneficiary ID Number</label>
+                                <input type="text" class="form-control" name="beneficiary_id_number">
+                            </div>
 
-                    <div class="col-md-4 mb-3 d-flex align-items-center">
-                        <div class="form-check mt-4">
-                            <input class="form-check-input" type="checkbox" name="has_whatsapp" value="true" id="add_has_whatsapp">
-                            <label class="form-check-label" for="add_has_whatsapp">
-                                Has WhatsApp
-                            </label>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Beneficiary Cell Number</label>
+                                <input
+                                    type="tel"
+                                    class="form-control beneficiary-phone"
+                                    name="beneficiary_cell_number"
+                                    pattern="0[0-9]{9,10}"
+                                    placeholder="e.g. 0812345678"
+                                    maxlength="11"
+                                    oninput="validateAllBeneficiaryPhones()"
+                                >
+                                <small class="text-danger d-none">
+                                    Beneficiary phone must start with 0 and contain 10-11 digits.
+                                </small>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -167,9 +167,7 @@
                         <th>Email</th>
                         <th>Stand</th>
                         <th>Yard Size</th>
-                        <th>Beneficiary Name & Surname</th>
-                        <th>Beneficiary ID Number</th>
-                        <th>Beneficiary Cell</th>
+                        <th>Beneficiaries</th>
                         <th>WhatsApp</th>
                         <th>Status</th>
                         <th style="min-width: 220px;">Actions</th>
@@ -192,9 +190,25 @@
                                 -
                             {% endif %}
                         </td>
-                        <td>{{ client.beneficiary_name_surname or '-' }}</td>
-                        <td>{{ client.beneficiary_id_number or '-' }}</td>
-                        <td>{{ client.beneficiary_cell_number or '-' }}</td>
+                        <td>
+                            {% if client.beneficiaries %}
+                                <span class="badge bg-dark">{{ client.beneficiaries|length }}</span>
+                                {% for b in client.beneficiaries[:2] %}
+                                    <div class="small">
+                                        {{ b.name_surname or 'Unnamed' }}
+                                        {% if b.cell_number %}
+                                            - {{ b.cell_number }}
+                                        {% endif %}
+                                    </div>
+                                {% endfor %}
+
+                                {% if client.beneficiaries|length > 2 %}
+                                    <div class="small text-muted">+ {{ client.beneficiaries|length - 2 }} more</div>
+                                {% endif %}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
                         <td>
                             {% if client.has_whatsapp %}
                                 <span class="badge bg-success">Yes</span>
@@ -224,9 +238,15 @@
                                     data-yard-size="{{ client.yard_size if client.yard_size is not none else '' }}"
                                     data-has-whatsapp="{{ 'true' if client.has_whatsapp else 'false' }}"
                                     data-subscribed="{{ 'true' if client.subscribed else 'false' }}"
-                                    data-beneficiary-name-surname="{{ client.beneficiary_name_surname or '' }}"
-                                    data-beneficiary-id-number="{{ client.beneficiary_id_number or '' }}"
-                                    data-beneficiary-cell-number="{{ client.beneficiary_cell_number or '' }}"
+                                    data-beneficiaries='[
+                                        {% for b in client.beneficiaries %}
+                                        {
+                                            "name_surname": "{{ b.name_surname or '' }}",
+                                            "id_number": "{{ b.id_number or '' }}",
+                                            "cell_number": "{{ b.cell_number or '' }}"
+                                        }{% if not loop.last %},{% endif %}
+                                        {% endfor %}
+                                    ]'
                                 >
                                     Edit
                                 </button>
@@ -260,7 +280,7 @@
                     </tr>
                     {% else %}
                     <tr>
-                        <td colspan="13" class="text-center">No clients found.</td>
+                        <td colspan="11" class="text-center">No clients found.</td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -355,30 +375,17 @@
                             <input type="number" step="0.01" class="form-control" name="yard_size" id="edit_yard_size">
                         </div>
 
-                        <div class="col-md-4 mb-3">
-                            <label class="form-label">Beneficiary Name & Surname</label>
-                            <input type="text" class="form-control" name="beneficiary_name_surname" id="edit_beneficiary_name_surname">
-                        </div>
+                        <div class="col-12">
+                            <hr>
 
-                        <div class="col-md-4 mb-3">
-                            <label class="form-label">Beneficiary ID Number</label>
-                            <input type="text" class="form-control" name="beneficiary_id_number" id="edit_beneficiary_id_number">
-                        </div>
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h6 class="mb-0">Beneficiaries</h6>
+                                <button type="button" class="btn btn-sm btn-outline-dark" onclick="addEditBeneficiaryRow()">
+                                    + Add Beneficiary
+                                </button>
+                            </div>
 
-                        <div class="col-md-4 mb-3">
-                            <label class="form-label">Beneficiary Cell Number</label>
-                            <input
-                                type="tel"
-                                class="form-control"
-                                name="beneficiary_cell_number"
-                                id="edit_beneficiary_cell_number"
-                                pattern="0[0-9]{9,10}"
-                                maxlength="11"
-                                oninput="validateOptionalPhoneField('edit_beneficiary_cell_number', 'editBeneficiaryPhoneError', 'editSubmitBtn')"
-                            >
-                            <small id="editBeneficiaryPhoneError" class="text-danger d-none">
-                                Beneficiary phone must start with 0 and contain 10-11 digits.
-                            </small>
+                            <div id="editBeneficiariesContainer"></div>
                         </div>
 
                         <div class="col-md-6 mb-3 d-flex align-items-center">
@@ -491,10 +498,28 @@ function openEditModal(button) {
     document.getElementById("edit_yard_size").value = button.getAttribute("data-yard-size") || "";
     document.getElementById("edit_has_whatsapp").checked = button.getAttribute("data-has-whatsapp") === "true";
     document.getElementById("edit_subscribed").checked = button.getAttribute("data-subscribed") === "true";
-    document.getElementById("edit_beneficiary_name_surname").value = button.getAttribute("data-beneficiary-name-surname") || "";
-    document.getElementById("edit_beneficiary_id_number").value = button.getAttribute("data-beneficiary-id-number") || "";
-    document.getElementById("edit_beneficiary_cell_number").value = button.getAttribute("data-beneficiary-cell-number") || "";
-    validateOptionalPhoneField("edit_beneficiary_cell_number", "editBeneficiaryPhoneError", "editSubmitBtn");
+    const editBeneficiariesContainer = document.getElementById("editBeneficiariesContainer");
+    editBeneficiariesContainer.innerHTML = "";
+
+    let beneficiaries = [];
+
+    try {
+        beneficiaries = JSON.parse(button.getAttribute("data-beneficiaries") || "[]");
+    } catch (e) {
+        beneficiaries = [];
+    }
+
+    if (beneficiaries.length > 0) {
+        beneficiaries.forEach(function(b) {
+            addEditBeneficiaryRow(
+                b.name_surname || "",
+                b.id_number || "",
+                b.cell_number || ""
+            );
+        });
+    } else {
+        addEditBeneficiaryRow();
+    }
     validatePhoneField("edit_phone_number", "editPhoneError", "editSubmitBtn");
 
     const modal = new bootstrap.Modal(document.getElementById("editClientModal"));
@@ -509,6 +534,179 @@ function confirmDelete(button) {
 
     const deleteModal = new bootstrap.Modal(document.getElementById("deleteModal"));
     deleteModal.show();
+}
+
+function addEditBeneficiaryRow(nameSurname = "", idNumber = "", cellNumber = "") {
+    const container = document.getElementById("editBeneficiariesContainer");
+
+    const row = document.createElement("div");
+    row.className = "edit-beneficiary-row border rounded p-3 mb-3";
+
+    row.innerHTML = `
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <strong>Beneficiary</strong>
+            <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeEditBeneficiaryRow(this)">
+                Remove
+            </button>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <label class="form-label">Beneficiary Name & Surname</label>
+                <input type="text" class="form-control" name="beneficiary_name_surname" value="${escapeHtml(nameSurname)}">
+            </div>
+
+            <div class="col-md-4 mb-3">
+                <label class="form-label">Beneficiary ID Number</label>
+                <input type="text" class="form-control" name="beneficiary_id_number" value="${escapeHtml(idNumber)}">
+            </div>
+
+            <div class="col-md-4 mb-3">
+                <label class="form-label">Beneficiary Cell Number</label>
+                <input
+                    type="tel"
+                    class="form-control edit-beneficiary-phone"
+                    name="beneficiary_cell_number"
+                    value="${escapeHtml(cellNumber)}"
+                    pattern="0[0-9]{9,10}"
+                    maxlength="11"
+                    oninput="validateAllEditBeneficiaryPhones()"
+                >
+                <small class="text-danger d-none">
+                    Beneficiary phone must start with 0 and contain 10-11 digits.
+                </small>
+            </div>
+        </div>
+    `;
+
+    container.appendChild(row);
+    validateAllEditBeneficiaryPhones();
+}
+
+function removeEditBeneficiaryRow(button) {
+    const confirmed = confirm("Are you sure you want to remove this beneficiary?");
+
+    if (!confirmed) {
+        return;
+    }
+
+    button.closest(".edit-beneficiary-row").remove();
+    validateAllEditBeneficiaryPhones();
+}
+
+function validateAllEditBeneficiaryPhones() {
+    const phones = document.querySelectorAll(".edit-beneficiary-phone");
+    const submitBtn = document.getElementById("editSubmitBtn");
+    const regex = /^0\d{9,10}$/;
+    let allValid = true;
+
+    phones.forEach(function(input) {
+        input.value = input.value.replace(/\D/g, "");
+
+        const error = input.parentElement.querySelector("small");
+
+        if (input.value.trim() === "") {
+            error.classList.add("d-none");
+            return;
+        }
+
+        if (!regex.test(input.value)) {
+            error.classList.remove("d-none");
+            allValid = false;
+        } else {
+            error.classList.add("d-none");
+        }
+    });
+
+    submitBtn.disabled = !allValid;
+}
+
+function escapeHtml(value) {
+    return String(value || "")
+        .replaceAll("&", "&amp;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;");
+}
+</script>
+<script>
+function addBeneficiaryRow() {
+    const container = document.getElementById("beneficiariesContainer");
+
+    const row = document.createElement("div");
+    row.className = "beneficiary-row border rounded p-3 mb-3";
+
+    row.innerHTML = `
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <strong>Additional Beneficiary</strong>
+            <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeBeneficiaryRow(this)">
+                Remove
+            </button>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <label class="form-label">Beneficiary Name & Surname</label>
+                <input type="text" class="form-control" name="beneficiary_name_surname">
+            </div>
+
+            <div class="col-md-4 mb-3">
+                <label class="form-label">Beneficiary ID Number</label>
+                <input type="text" class="form-control" name="beneficiary_id_number">
+            </div>
+
+            <div class="col-md-4 mb-3">
+                <label class="form-label">Beneficiary Cell Number</label>
+                <input
+                    type="tel"
+                    class="form-control beneficiary-phone"
+                    name="beneficiary_cell_number"
+                    pattern="0[0-9]{9,10}"
+                    placeholder="e.g. 0812345678"
+                    maxlength="11"
+                    oninput="validateAllBeneficiaryPhones()"
+                >
+                <small class="text-danger d-none">
+                    Beneficiary phone must start with 0 and contain 10-11 digits.
+                </small>
+            </div>
+        </div>
+    `;
+
+    container.appendChild(row);
+}
+
+function removeBeneficiaryRow(button) {
+    button.closest(".beneficiary-row").remove();
+    validateAllBeneficiaryPhones();
+}
+
+function validateAllBeneficiaryPhones() {
+    const phones = document.querySelectorAll(".beneficiary-phone");
+    const submitBtn = document.getElementById("addSubmitBtn");
+    const regex = /^0\d{9,10}$/;
+    let allValid = true;
+
+    phones.forEach(function(input) {
+        input.value = input.value.replace(/\D/g, "");
+
+        const error = input.parentElement.querySelector("small");
+
+        if (input.value.trim() === "") {
+            error.classList.add("d-none");
+            return;
+        }
+
+        if (!regex.test(input.value)) {
+            error.classList.remove("d-none");
+            allValid = false;
+        } else {
+            error.classList.add("d-none");
+        }
+    });
+
+    submitBtn.disabled = !allValid;
 }
 </script>
 {% endblock %}

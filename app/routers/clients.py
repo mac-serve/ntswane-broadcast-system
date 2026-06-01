@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Request, Depends, Form, Query, HTTPException
 from fastapi.responses import RedirectResponse, StreamingResponse
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import or_
 from database import get_db
-from models import Client, Admin
+from models import Client, Admin, ClientBeneficiary
 from templates_config import templates
 from security import get_current_admin
 import re
@@ -11,6 +11,7 @@ import pandas as pd
 import io
 from datetime import datetime
 from urllib.parse import urlencode
+from typing import List
 
 router = APIRouter()
 
@@ -106,7 +107,8 @@ def clients_page(
         page = total_pages
 
     clients = (
-        query.order_by(Client.id.desc())
+        query.options(joinedload(Client.beneficiaries))
+        .order_by(Client.id.desc())
         .offset((page - 1) * per_page)
         .limit(per_page)
         .all()
@@ -141,9 +143,9 @@ async def add_client(
     email: str = Form(None),
     stand_number: str = Form(None),
     yard_size: str = Form(None),
-    beneficiary_name_surname: str = Form(None),
-    beneficiary_id_number: str = Form(None),
-    beneficiary_cell_number: str = Form(None),
+    beneficiary_name_surname: List[str] = Form([]),
+    beneficiary_id_number: List[str] = Form([]),
+    beneficiary_cell_number: List[str] = Form([]),
     has_whatsapp: str = Form(None),
     page: int = Form(1),
     per_page: int = Form(10),
@@ -159,10 +161,6 @@ async def add_client(
     id_number = clean_text(id_number)
     email = clean_text(email)
     stand_number = clean_text(stand_number)
-
-    beneficiary_name_surname = clean_text(beneficiary_name_surname)
-    beneficiary_id_number = clean_text(beneficiary_id_number)
-    beneficiary_cell_number = clean_optional_phone_number(beneficiary_cell_number)
 
     yard_size_value = None
     if yard_size is not None and str(yard_size).strip() != "":
@@ -188,15 +186,32 @@ async def add_client(
         email=email,
         stand_number=stand_number,
         yard_size=yard_size_value,
-        beneficiary_name_surname=beneficiary_name_surname,
-        beneficiary_id_number=beneficiary_id_number,
-        beneficiary_cell_number=beneficiary_cell_number,
         has_whatsapp=has_whatsapp_value,
         subscribed=True,
         created_at=datetime.utcnow()
     )
 
     db.add(new_client)
+    db.flush()  # gives us new_client.id before commit
+
+    for i in range(len(beneficiary_name_surname)):
+        b_name = clean_text(beneficiary_name_surname[i]) if i < len(beneficiary_name_surname) else None
+        b_id = clean_text(beneficiary_id_number[i]) if i < len(beneficiary_id_number) else None
+        b_cell_raw = beneficiary_cell_number[i] if i < len(beneficiary_cell_number) else None
+        b_cell = clean_optional_phone_number(b_cell_raw)
+
+        # Skip completely empty beneficiary rows
+        if not b_name and not b_id and not b_cell:
+            continue
+
+        db.add(ClientBeneficiary(
+            client_id=new_client.id,
+            name_surname=b_name,
+            id_number=b_id,
+            cell_number=b_cell,
+            created_at=datetime.utcnow()
+        ))
+
     db.commit()
 
     return RedirectResponse(
@@ -217,9 +232,9 @@ async def edit_client(
     email: str = Form(None),
     stand_number: str = Form(None),
     yard_size: str = Form(None),
-    beneficiary_name_surname: str = Form(None),
-    beneficiary_id_number: str = Form(None),
-    beneficiary_cell_number: str = Form(None),
+    beneficiary_name_surname: list[str] = Form([]),
+    beneficiary_id_number: list[str] = Form([]),
+    beneficiary_cell_number: list[str] = Form([]),
     has_whatsapp: str = Form(None),
     subscribed: str = Form(None),
     page: int = Form(1),
@@ -245,10 +260,6 @@ async def edit_client(
     email = clean_text(email)
     stand_number = clean_text(stand_number)
 
-    beneficiary_name_surname = clean_text(beneficiary_name_surname)
-    beneficiary_id_number = clean_text(beneficiary_id_number)
-    beneficiary_cell_number = clean_optional_phone_number(beneficiary_cell_number)
-
     yard_size_value = None
     if yard_size is not None and str(yard_size).strip() != "":
         try:
@@ -271,11 +282,31 @@ async def edit_client(
     client.email = email
     client.stand_number = stand_number
     client.yard_size = yard_size_value
-    client.beneficiary_name_surname = beneficiary_name_surname
-    client.beneficiary_id_number = beneficiary_id_number
-    client.beneficiary_cell_number = beneficiary_cell_number
     client.has_whatsapp = True if has_whatsapp == "true" else False
     client.subscribed = True if subscribed == "true" else False
+
+    # Delete existing beneficiaries for this client
+    db.query(ClientBeneficiary).filter(
+        ClientBeneficiary.client_id == client.id
+    ).delete()
+
+    # Re-add beneficiaries from edit form
+    for i in range(len(beneficiary_name_surname)):
+        b_name = clean_text(beneficiary_name_surname[i]) if i < len(beneficiary_name_surname) else None
+        b_id = clean_text(beneficiary_id_number[i]) if i < len(beneficiary_id_number) else None
+        b_cell_raw = beneficiary_cell_number[i] if i < len(beneficiary_cell_number) else None
+        b_cell = clean_optional_phone_number(b_cell_raw)
+
+        if not b_name and not b_id and not b_cell:
+            continue
+
+        db.add(ClientBeneficiary(
+            client_id=client.id,
+            name_surname=b_name,
+            id_number=b_id,
+            cell_number=b_cell,
+            created_at=datetime.utcnow()
+        ))
 
     db.commit()
 

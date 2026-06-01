@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Form, Depends, Request, Query
+from fastapi import APIRouter, Form, Depends, Request, Query, HTTPException
 from fastapi.responses import HTMLResponse
 from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
@@ -12,6 +12,7 @@ from services.sms_service import send_sms_message
 from services.email_service import send_email_message
 from models import Admin
 from security import get_current_admin
+from datetime import datetime
 
 router = APIRouter()
 
@@ -225,3 +226,128 @@ async def broadcast_history(
             "end_page": end_page,
         }
     )
+
+@router.post("/broadcast/{broadcast_id}/resend")
+def resend_broadcast(
+    broadcast_id: int,
+    db: Session = Depends(get_db),
+    current_admin: Admin = Depends(get_current_admin)
+):
+    broadcast = db.query(Broadcast).filter(Broadcast.id == broadcast_id).first()
+
+    if not broadcast:
+        raise HTTPException(status_code=404, detail="Broadcast not found")
+
+    audience = broadcast.audience
+    message_body = f"{broadcast.title}\n\n{broadcast.content}"
+
+    if audience == "web":
+        return RedirectResponse(url="/broadcast/history", status_code=303)
+
+    elif audience == "all":
+        clients = db.query(Client).filter(
+            Client.subscribed == True,
+            Client.is_deleted == False
+        ).all()
+
+    elif audience == "whatsapp":
+        clients = db.query(Client).filter(
+            Client.subscribed == True,
+            Client.has_whatsapp == True,
+            Client.is_deleted == False
+        ).all()
+
+    elif audience == "sms":
+        clients = db.query(Client).filter(
+            Client.subscribed == True,
+            Client.is_deleted == False
+        ).all()
+
+    elif audience == "email":
+        clients = db.query(Client).filter(
+            Client.subscribed == True,
+            Client.email.isnot(None),
+            Client.email != "",
+            Client.is_deleted == False
+        ).all()
+
+    else:
+        clients = []
+
+    queued_total = 0
+
+    for client in clients:
+        phone = client.phone_number
+        phone = "+27" + phone[1:] if phone and phone.startswith("0") else phone
+
+        if audience == "all":
+            if phone:
+                db.add(MessageQueue(
+                    client_id=client.id,
+                    broadcast_id=broadcast.id,
+                    channel="sms",
+                    recipient=phone,
+                    subject=broadcast.title,
+                    message_body=message_body,
+                    status="queued",
+                    created_at=datetime.utcnow()
+                ))
+                queued_total += 1
+
+            if client.email:
+                db.add(MessageQueue(
+                    client_id=client.id,
+                    broadcast_id=broadcast.id,
+                    channel="email",
+                    recipient=client.email,
+                    subject=broadcast.title,
+                    message_body=broadcast.content,
+                    status="queued",
+                    created_at=datetime.utcnow()
+                ))
+                queued_total += 1
+
+        elif audience == "sms" and phone:
+            db.add(MessageQueue(
+                client_id=client.id,
+                broadcast_id=broadcast.id,
+                channel="sms",
+                recipient=phone,
+                subject=broadcast.title,
+                message_body=message_body,
+                status="queued",
+                created_at=datetime.utcnow()
+            ))
+            queued_total += 1
+
+        elif audience == "whatsapp" and phone:
+            db.add(MessageQueue(
+                client_id=client.id,
+                broadcast_id=broadcast.id,
+                channel="whatsapp",
+                recipient=phone,
+                subject=broadcast.title,
+                message_body=message_body,
+                status="queued",
+                created_at=datetime.utcnow()
+            ))
+            queued_total += 1
+
+        elif audience == "email" and client.email:
+            db.add(MessageQueue(
+                client_id=client.id,
+                broadcast_id=broadcast.id,
+                channel="email",
+                recipient=client.email,
+                subject=broadcast.title,
+                message_body=broadcast.content,
+                status="queued",
+                created_at=datetime.utcnow()
+            ))
+            queued_total += 1
+
+    broadcast.queued_count = (broadcast.queued_count or 0) + queued_total
+
+    db.commit()
+
+    return RedirectResponse(url="/broadcast/history", status_code=303)

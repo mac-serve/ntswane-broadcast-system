@@ -36,6 +36,24 @@ class Client(Base):
     beneficiary_cell_number = Column(String(20), nullable=True)
 
     logs = relationship("MessageLog", back_populates="client")
+    beneficiaries = relationship("ClientBeneficiary", back_populates="client", cascade="all, delete-orphan")
+
+# -------------------------
+# CLIENT BENEFICIARIES
+# -------------------------
+class ClientBeneficiary(Base):
+    __tablename__ = "client_beneficiaries"
+
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    client_id = Column(Integer, ForeignKey("clients.id"), nullable=False, index=True)
+
+    name_surname = Column(String(255), nullable=True)
+    id_number = Column(String(255), nullable=True)
+    cell_number = Column(String(20), nullable=True)
+
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    client = relationship("Client", back_populates="beneficiaries")
 
 # -------------------------
 # Message Queue

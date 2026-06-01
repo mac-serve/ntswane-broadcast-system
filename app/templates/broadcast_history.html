@@ -66,6 +66,7 @@
                                 type="button"
                                 class="btn btn-link p-0 text-decoration-none"
                                 onclick="openBroadcastModal(this)"
+                                data-id="{{ item.id }}"
                                 data-title="{{ item.title or '' }}"
                                 data-content="{{ item.message or item.content or '' }}"
                                 data-audience="{{ item.audience or '' }}"
@@ -158,6 +159,11 @@
             </div>
 
             <div class="modal-footer">
+                <form method="POST" id="resendBroadcastForm" class="me-auto">
+                <button type="submit" class="btn btn-warning">
+                    Resend Notice
+                </button>
+            </form>
                 <button type="button" class="btn btn-dark" data-bs-dismiss="modal">Close</button>
             </div>
         </div>
@@ -168,6 +174,8 @@
 {% block scripts %}
 <script>
 function openBroadcastModal(button) {
+    const broadcastId = button.getAttribute("data-id");
+
     document.getElementById("modal_broadcast_title").textContent =
         button.getAttribute("data-title") || "";
 
@@ -180,8 +188,17 @@ function openBroadcastModal(button) {
     document.getElementById("modal_broadcast_date").textContent =
         button.getAttribute("data-date") || "";
 
+    // 🔥 THIS is what connects modal → backend
+    document.getElementById("resendBroadcastForm").action =
+        "/broadcast/" + broadcastId + "/resend";
+
     const modal = new bootstrap.Modal(document.getElementById("broadcastDetailModal"));
     modal.show();
 }
+document.getElementById("resendBroadcastForm").addEventListener("submit", function(e) {
+    if (!confirm("Are you sure you want to resend this notice?")) {
+        e.preventDefault();
+    }
+});
 </script>
 {% endblock %}
